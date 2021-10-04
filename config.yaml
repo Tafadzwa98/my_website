@@ -13,8 +13,8 @@ params:
     title: Hi, my name is Tafadzwa Chinanzvavana
   blog: {}
   contact:
-    address:London Business School
-      - city: London, NSW 4SA
+    address:
+      - city: London, NS1 4SA
         country: United Kingdom
         street: Sussex Place
         title: Sussex Place
