@@ -1,6 +1,6 @@
 baseURL: http://example.org/
 languageCode: en-us
-title: Forty
+title: Portfolio website for Tafadzwa Chinanzvavana
 theme: forty
 googleAnalytics: ''
 disqusShortname: ''
@@ -10,18 +10,18 @@ params:
     subtitle: |-
       A RESPONSIVE SITE TEMPLATE DESIGNED BY HTML5 UP
       AND RELEASED UNDER THE CREATIVE COMMONS.
-    title: Hi, my name is Forty
+    title: Hi, my name is Tafadzwa Chinanzvavana
   blog: {}
   contact:
-    address:
-      - city: City, ST 00000
-        country: Country
-        street: Street
-        title: Address
+    address:London Business School
+      - city: London, NSW 4SA
+        country: United Kingdom
+        street: Sussex Place
+        title: Sussex Place
     buttonClear: Clear
     buttonSend: Send message
     email:
-      - email: example@domain.com
+      - email: tafadzwac.mfa2022@london.edu
         title: Email
     enable: yes
     phone:
