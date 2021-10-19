@@ -29,7 +29,7 @@ params:
         title: Phone
   custom_css: []
   custom_js: []
-  description: Your description
+  description: Welcome to my website. I will be sharing my journey leading upto London Busines School with you.
   error404:
     heading: Page couldn't be found
     text: Please visit [this page](/)
