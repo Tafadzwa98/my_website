@@ -68,7 +68,7 @@ params:
     links:
       - name: Home
         url: '# about'
-      - name: About me
+      - name: About Me
         url: '#about me'
         - name: Education and Work Experience
         url: '# education and work experience'
