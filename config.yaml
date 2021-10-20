@@ -70,7 +70,7 @@ params:
         url: '# about'
       - name: About Me
         url: '#about me'
-        - name: Education and Work Experience
+      - name: Education and Work Experience
         url: '# education and work experience'
       - name: Blogs
         url: '# blogs '
