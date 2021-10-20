@@ -1,4 +1,4 @@
-baseURL: http://example.org/
+baseURL: https://tafadzwac.netlify.app/
 languageCode: en-us
 title: Portfolio website for Tafadzwa Chinanzvavana
 theme: forty
@@ -65,25 +65,25 @@ params:
   tiles:
     enable: yes
     showcase:
-      - image: pic01.jpg
-        subtitle: Ipsum Dolor Sit Amet
-        title: Aliquam
+      - image: pic1.JPG
+        subtitle: Who is Tafadzwa
+        title: About me
         url: blogs/aliquam
-      - image: pic02.jpg
-        subtitle: Feugiat Amet Tempus
-        title: Tempus
+      - image: lbs pic.jpg
+        subtitle: My journey to London Business School
+        title: Education
         url: blogs/tempus
-      - image: pic03.jpg
-        subtitle: Lorem Etiam Nullam
-        title: Magna
+      - image: cv.jpg
+        subtitle: Career aspirations
+        title: Work Experience
         url: blogs/magna
-      - image: pic04.jpg
-        subtitle: Nisl Sed Aliquam
-        title: Ipsum
+      - image: interests.JPG
+        subtitle: Fun time!
+        title: Interests
         url: blogs/ipsum
-      - image: pic05.jpg
-        subtitle: Ipsum Dolor Sit Amet
-        title: Consequat
+      - image: data.jpg
+        subtitle: Data Analytics for Finance coursework
+        title: R projects
         url: blogs/ipsum
       - image: pic06.jpg
         subtitle: Feugiat Amet Tempus
@@ -92,11 +92,6 @@ params:
   two:
     buttonText: Explore
     enable: yes
-    subtitle: "Nullam et orci eu lorem consequat tincidunt vivamus et sagittis libero.
-      \n    Mauris aliquet magna magna sed nunc rhoncus pharetra. \n    Pellentesque
-      condimentum sem. In efficitur ligula tate urna. Maecenas laoreet massa vel lacinia
-      pellentesque lorem ipsum dolor. \n    Nullam et orci eu lorem consequat tincidunt.
-      Vivamus et sagittis libero.\n    Mauris aliquet magna magna sed nunc rhoncus
-      amet pharetra et feugiat tempus."
-    title: Massa libero
+    subtitle: "Please feel free to reach out to me on Linkedin or by using the form below if you have any questions. All enquires will be responded to within 48 hours"
+    title: Contact Info
     url: blogs
