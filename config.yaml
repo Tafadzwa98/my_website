@@ -1,6 +1,6 @@
 baseURL: https://tafadzwac.netlify.app/
 languageCode: en-us
-title:Tafadzwa Chinanzvavana
+title: Tafadzwa Chinanzvavana
 theme: forty
 googleAnalytics: ''
 disqusShortname: ''
@@ -52,14 +52,15 @@ params:
         url: blogs
     links:
       - name: Home
-        url: '# about'
+        url: 
       - name: About Me
-        url: '#blogs/aliquam'
-      - name: Contact Information
-        url: '# education and work experience'
+        url: blogs/aliquam
+      - name: Education
+        url: blogs/tempus
       - name: Blogs
         url: '# blogs '
     menu: Menu
+    title: 
   tiles:
     enable: yes
     showcase:
