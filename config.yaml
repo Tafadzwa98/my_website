@@ -54,14 +54,12 @@ params:
       - name: Home
         url: '# about'
       - name: About Me
-        url: '#about me'
-      - name: Education and Work Experience
+        url: '#blogs/aliquam'
+      - name: Contact Information
         url: '# education and work experience'
       - name: Blogs
         url: '# blogs '
     menu: Menu
-    subtitle: By HTML5 Up
-    title: 
   tiles:
     enable: yes
     showcase:
