@@ -59,8 +59,10 @@ params:
         url: blogs/education
       - name: Work Experience
         url: blogs/work
-      - name: Blogs
-        url: '# blogs '
+      - name: Interests
+        url: blogs/interests
+      - name: Data Analytics Coursework
+        url: blogs/data
     menu: Menu
     title: 
   tiles:
@@ -81,11 +83,11 @@ params:
       - image: interests.JPG
         subtitle: Fun time!
         title: Interests
-        url: blogs/ipsum
+        url: blogs/interests
       - image: data.jpg
         subtitle: Data Analytics for Finance coursework
         title: R projects
-        url: blogs/ipsum
+        url: blogs/data
       - image: pic06.jpg
         subtitle: Feugiat Amet Tempus
         title: Etiam

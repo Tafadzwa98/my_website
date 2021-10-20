@@ -1,0 +1,288 @@
+---
+categories:
+- ""
+- ""
+date: "2017-10-31T21:28:43-05:00"
+description: Data Analytics coursework
+draft: false
+image: dataanalytics.jpg
+keywords: ""
+slug: data
+title: Data Analytics Coursework
+---
+# German election
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+```{r load-libraries, warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(fivethirtyeight)
+library(here)
+library(skimr)
+library(janitor)
+library(vroom)
+library(tidyquant)
+library(rvest) # to scrape wikipedia page
+library(kableExtra)
+```
+```{r, scrape_wikipedia_polling_data, warnings= FALSE, message=FALSE}
+url <- "https://en.wikipedia.org/wiki/Opinion_polling_for_the_2021_German_federal_election"
+
+tables <- url %>% 
+  read_html() %>% 
+  html_nodes(css="table")
+
+polls <- map(tables, . %>% 
+             html_table(fill=TRUE)%>% 
+             janitor::clean_names())
+
+german_election_polls <- polls[[1]] %>%
+  slice(2:(n()-1)) %>%
+  mutate(
+         end_date = str_sub(fieldwork_date, -11),
+         end_date = dmy(end_date),
+         month = month(end_date),
+         week = isoweek(end_date)
+         )
+head(german_election_polls)
+```
+```{r, moving_averages_dataframes, warnings= FALSE, message=FALSE}
+
+dataframe_election <- german_election_polls %>%
+  select(union,spd,af_d,fdp,linke,grune,end_date) %>%
+  mutate(
+    union_RA =zoo::rollmean(union, k=14, fill= NA),
+    spd_RA =zoo::rollmean(spd, k=14, fill= NA),
+    af_d_RA =zoo::rollmean(af_d, k=14, fill= NA),
+    fdp_RA =zoo::rollmean(fdp, k=14, fill= NA),
+    linke_RA =zoo::rollmean(linke, k=14, fill= NA),
+    grune_RA =zoo::rollmean(grune, k=14, fill= NA),
+  ) %>%
+  select(union_RA,spd_RA,af_d_RA,fdp_RA,linke_RA,grune_RA,end_date)
+
+```
+
+## Creating individual dataframes for each party
+
+```{r, invidual_dataframes, warnings = FALSE, message= FALSE}
+
+union_df <- dataframe_election %>%
+  select(union_RA, end_date) %>%
+  rename(percentage_party = union_RA) %>%
+  mutate(Party = 'Union')
+
+spd_df <- dataframe_election %>%
+  select(spd_RA, end_date) %>%
+  rename(percentage_party = spd_RA) %>%
+  mutate(Party = 'SPD')
+
+af_d_df <- dataframe_election %>%
+  select(af_d_RA, end_date) %>%
+  rename(percentage_party = af_d_RA) %>%
+  mutate(Party = 'AfD')
+
+fdp_df <- dataframe_election %>%
+  select(fdp_RA, end_date) %>%
+  rename(percentage_party = fdp_RA) %>%
+  mutate(Party = 'FDP')
+
+linke_df <- dataframe_election %>%
+  select(linke_RA, end_date) %>%
+  rename(percentage_party = linke_RA) %>%
+  mutate(Party = 'Linke')
+
+grune_df <- dataframe_election %>%
+  select(grune_RA, end_date) %>%
+  rename(percentage_party = grune_RA) %>%
+  mutate(Party = 'Grüne')
+
+```
+
+## Plotting the data
+
+```{r, plot of graph, warnings= FALSE, message=FALSE}
+
+ggplot(union_df, aes(x=end_date, y=percentage_party, colour = Party)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth() + 
+  geom_point(data=spd_df, alpha = 0.3) +
+  geom_smooth(data=spd_df) +
+  geom_point(data=af_d_df, alpha = 0.3) +
+  geom_smooth(data=af_d_df) +
+  geom_point(data=fdp_df, alpha = 0.3) +
+  geom_smooth(data=fdp_df) +
+  geom_point(data=linke_df, alpha = 0.3) +
+  geom_smooth(data=linke_df) +
+  geom_point(data=grune_df, alpha = 0.3) +
+  geom_smooth(data=grune_df) +
+  scale_colour_manual(values = c("Union" = "black", "SPD" = "firebrick3", 'AfD' = 'deepskyblue3', 'FDP' = 'yellow2', 'Linke' = 'violetred3', 'Grüne' = 'chartreuse3')) +
+  theme_bw()+
+  labs(title = "Opinion polling for the 2021 German federal election",
+       subtitle = "14-day moving averages for indiviudal parties across 16 different polling institutes",
+       x = "Date at which the polling data was collected", 
+       y = "Predicted percentage of votes achieved",
+       caption = "Source: https://en.wikipedia.org/wiki/Opinion_polling_for_the_2021_German_federal_election",
+       ) +
+  NULL
+
+```
+ 
+ The plot above shows how the opinion polling of the German election collected by several agencies since the beginning of January
+ 
+# How has CPI changed over the years
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+```{r load-libraries, include=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(lubridate)
+library(here)
+library(skimr)
+library(janitor)
+library(httr)
+library(readxl)
+library(vroom)
+library(stringr)
+library(skimr)
+library(dplyr)
+library(infer)
+```
+
+## Getting the data
+
+```{r, webscraping}
+
+library(rvest) # to scrape website
+library(tidyquant)
+
+#Getting the tables from the website
+
+url <- "https://fredaccount.stlouisfed.org/public/datalist/843"
+tables <- url %>% 
+  read_html() %>% 
+  html_nodes(css="table")
+
+CPI_data_1 <- map(tables, . %>% 
+             html_table(fill=TRUE)%>% 
+             janitor::clean_names())
+
+CPI_data_2 <- CPI_data_1[[2]] %>% 
+  slice(1:49)
+
+#Pulling a vector of components via series_id
+
+series_ids <- CPI_data_2 %>% 
+  pull(series_id) 
+
+#Getting the data from 01-01-2015 as chart starts from 2016 onwards 
+
+CPI_data_3 <- tidyquant::tq_get(series_ids, get = "economic.data", from =  "2015-01-01")
+head(CPI_data_3)
+
+```
+
+## Modifying and cleaning up the data
+
+```{r, modifying the data}
+
+# Keeping only the important categories 
+
+# All Items (100%)          = CPIAUCSL
+# Housing (42%)             = CPIHOSSL
+# Transport (15%)           = CPITRNSL
+# Food and Beverages (15%)  = CPIFABSL
+# Apparel (3%)              = CPIAPPSL
+
+important_categories <-c("CPIAUCSL", "CPIHOSSL", "CPITRNSL", "CPIFABSL", "CPIAPPSL")
+
+CPI_data_4 <- CPI_data_3 %>%
+  filter(symbol %in% important_categories)  
+
+# Adding a lagged column and removing the resulting NAs
+
+CPI_data_5 <- CPI_data_4 %>%
+  group_by(symbol) %>%
+  dplyr::mutate(year_change = price/dplyr::lag(price, 12,default = NA) - 1) %>%
+  dplyr::filter(year_change != "NA") %>%
+  as.data.frame()
+
+# Adding direction of price changes for coloring points later on
+
+CPI_data_6 <- CPI_data_5 %>%
+  dplyr::mutate(change_sign = ifelse(year_change >= 0, "positive", "negative"))
+
+# Adding the names of the series to the dataframe 
+
+CPI_data_7 <- CPI_data_6 %>%
+  dplyr::mutate(titles = case_when(symbol == "CPIAUCSL" ~ "All Items", 
+                               symbol == "CPIHOSSL" ~ "Housing",
+                               symbol == "CPITRNSL" ~ "Transport",
+                               symbol == "CPIFABSL" ~ "Food and Beverages",
+                               symbol == "CPIAPPSL" ~ "Apparel")
+                )
+
+# Sorting the data according to the magnitude of yearly changes 
+
+CPI_data_8 <- CPI_data_7 %>%
+  mutate(titles = factor(titles,levels=c("All Items","Transport","Apparel","Food and Beverages","Housing")))
+head(CPI_data_8)
+
+```
+
+## Plotting changes in US CPI 
+
+```{r, plotting the data}
+
+CPI_data_8 %>%
+  ggplot(aes(x = date, y = year_change, col=change_sign))+
+  geom_point(alpha=0.8)+
+  geom_smooth(col="grey", se=F)+
+  scale_y_continuous(labels = scales::percent) + 
+  facet_wrap("titles", ncol = 3, scales = "free") + 
+  theme_bw() + 
+  theme(legend.position= "none", plot.title = element_text(face = "bold"))+
+  scale_colour_manual(values = c("positive" = "lightcoral", "negative" = "steelblue2"))+
+  labs(
+    title = "Yearly change of US CPI and its most important components",
+    subtitle = "YoY change, positive when red and negative when blue
+Jan 2016 to Aug 2021",
+    caption = "Data from St. Louis Fed FRED 
+    https://fredaccount.stlouisfed.org/public/datalist/843",
+    x = "",
+    y = "YoY % Change"
+  )+
+  NULL
+
+```

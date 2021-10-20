@@ -1,0 +1,119 @@
+---
+categories:
+- ""
+- ""
+date: "2017-10-31T21:28:43-05:00"
+description: Data Analytics coursework
+draft: false
+image: dataanalytics.jpg
+keywords: ""
+slug: data
+title: Data Analytics Coursework
+---
+
+<script src="/rmarkdown-libs/header-attrs/header-attrs.js"></script>
+
+
+<div id="german-election" class="section level1">
+<h1>German election</h1>
+<pre class="r"><code>url &lt;- &quot;https://en.wikipedia.org/wiki/Opinion_polling_for_the_2021_German_federal_election&quot;
+
+tables &lt;- url %&gt;% 
+  read_html() %&gt;% 
+  html_nodes(css=&quot;table&quot;)
+
+polls &lt;- map(tables, . %&gt;% 
+             html_table(fill=TRUE)%&gt;% 
+             janitor::clean_names())
+
+german_election_polls &lt;- polls[[1]] %&gt;%
+  slice(2:(n()-1)) %&gt;%
+  mutate(
+         end_date = str_sub(fieldwork_date, -11),
+         end_date = dmy(end_date),
+         month = month(end_date),
+         week = isoweek(end_date)
+         )
+head(german_election_polls)</code></pre>
+<pre><code>## # A tibble: 6 × 16
+##   polling_firm     fieldwork_date samplesize abs   union   spd  af_d   fdp linke
+##   &lt;chr&gt;            &lt;chr&gt;          &lt;chr&gt;      &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 2021 federal el… 26 Sep 2021    –          23.4   24.1  25.7  10.3  11.5   4.9
+## 2 Wahlkreisprogno… 22–24 Sep 2021 1,400      –      22.5  25.5  11    12     7  
+## 3 Ipsos            22–23 Sep 2021 2,000      –      22    26    11    12     7  
+## 4 Forschungsgrupp… 22–23 Sep 2021 1,273      –      23    25    10    11     6  
+## 5 Forsa            20–23 Sep 2021 2,002      26     22    25    10    12     6  
+## 6 Allensbach       16–23 Sep 2021 1,554      –      25    26    10    10.5   5  
+## # … with 7 more variables: grune &lt;dbl&gt;, fw &lt;chr&gt;, others &lt;chr&gt;, lead &lt;chr&gt;,
+## #   end_date &lt;date&gt;, month &lt;dbl&gt;, week &lt;dbl&gt;</code></pre>
+<pre class="r"><code>dataframe_election &lt;- german_election_polls %&gt;%
+  select(union,spd,af_d,fdp,linke,grune,end_date) %&gt;%
+  mutate(
+    union_RA =zoo::rollmean(union, k=14, fill= NA),
+    spd_RA =zoo::rollmean(spd, k=14, fill= NA),
+    af_d_RA =zoo::rollmean(af_d, k=14, fill= NA),
+    fdp_RA =zoo::rollmean(fdp, k=14, fill= NA),
+    linke_RA =zoo::rollmean(linke, k=14, fill= NA),
+    grune_RA =zoo::rollmean(grune, k=14, fill= NA),
+  ) %&gt;%
+  select(union_RA,spd_RA,af_d_RA,fdp_RA,linke_RA,grune_RA,end_date)</code></pre>
+<div id="creating-individual-dataframes-for-each-party" class="section level2">
+<h2>Creating individual dataframes for each party</h2>
+<pre class="r"><code>union_df &lt;- dataframe_election %&gt;%
+  select(union_RA, end_date) %&gt;%
+  rename(percentage_party = union_RA) %&gt;%
+  mutate(Party = &#39;Union&#39;)
+
+spd_df &lt;- dataframe_election %&gt;%
+  select(spd_RA, end_date) %&gt;%
+  rename(percentage_party = spd_RA) %&gt;%
+  mutate(Party = &#39;SPD&#39;)
+
+af_d_df &lt;- dataframe_election %&gt;%
+  select(af_d_RA, end_date) %&gt;%
+  rename(percentage_party = af_d_RA) %&gt;%
+  mutate(Party = &#39;AfD&#39;)
+
+fdp_df &lt;- dataframe_election %&gt;%
+  select(fdp_RA, end_date) %&gt;%
+  rename(percentage_party = fdp_RA) %&gt;%
+  mutate(Party = &#39;FDP&#39;)
+
+linke_df &lt;- dataframe_election %&gt;%
+  select(linke_RA, end_date) %&gt;%
+  rename(percentage_party = linke_RA) %&gt;%
+  mutate(Party = &#39;Linke&#39;)
+
+grune_df &lt;- dataframe_election %&gt;%
+  select(grune_RA, end_date) %&gt;%
+  rename(percentage_party = grune_RA) %&gt;%
+  mutate(Party = &#39;Grüne&#39;)</code></pre>
+</div>
+<div id="plotting-the-data" class="section level2">
+<h2>Plotting the data</h2>
+<pre class="r"><code>ggplot(union_df, aes(x=end_date, y=percentage_party, colour = Party)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth() + 
+  geom_point(data=spd_df, alpha = 0.3) +
+  geom_smooth(data=spd_df) +
+  geom_point(data=af_d_df, alpha = 0.3) +
+  geom_smooth(data=af_d_df) +
+  geom_point(data=fdp_df, alpha = 0.3) +
+  geom_smooth(data=fdp_df) +
+  geom_point(data=linke_df, alpha = 0.3) +
+  geom_smooth(data=linke_df) +
+  geom_point(data=grune_df, alpha = 0.3) +
+  geom_smooth(data=grune_df) +
+  scale_colour_manual(values = c(&quot;Union&quot; = &quot;black&quot;, &quot;SPD&quot; = &quot;firebrick3&quot;, &#39;AfD&#39; = &#39;deepskyblue3&#39;, &#39;FDP&#39; = &#39;yellow2&#39;, &#39;Linke&#39; = &#39;violetred3&#39;, &#39;Grüne&#39; = &#39;chartreuse3&#39;)) +
+  theme_bw()+
+  labs(title = &quot;Opinion polling for the 2021 German federal election&quot;,
+       subtitle = &quot;14-day moving averages for indiviudal parties across 16 different polling institutes&quot;,
+       x = &quot;Date at which the polling data was collected&quot;, 
+       y = &quot;Predicted percentage of votes achieved&quot;,
+       caption = &quot;Source: https://en.wikipedia.org/wiki/Opinion_polling_for_the_2021_German_federal_election&quot;,
+       ) +
+  NULL</code></pre>
+<p><img src="/blogs/blog1_files/figure-html/plot%20of%20graph-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>The plot above shows how the opinion polling of the German election collected by several agencies since the beginning of January</p>
+</div>
+</div>
