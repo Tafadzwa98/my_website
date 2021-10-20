@@ -8,7 +8,7 @@ params:
   banner:
     buttonText: Get Started
     subtitle: |-
-      Welcome to my website.I am currently an MFA Student at London Business School and I will be sharing my journey and work with you here.
+      Welcome to my website. I am currently an MFA Student at London Business School and I will be sharing my journey and work with you here.
     title: Hi, my name is Tafadzwa Chinanzvavana
   blog: {}
   contact:
@@ -57,7 +57,7 @@ params:
         label: LinkedIn
         url: https://www.linkedin.com
   image: ''
-  name: Your name
+  name: Tafadzwa Chinanzvavana
   navigation:
     button1:
       - name: Get Started
@@ -67,13 +67,13 @@ params:
         url: '#'
     links:
       - name: Home
-        url: '#'
+        url: '# about'
+      - name: About me
+        url: '#about me'
+        - name: Education and Work Experience
+        url: '# education and work experience'
       - name: Blogs
-        url: blogs
-      - name: Generic Blog
-        url: blogs/ipsum
-      - name: Elements
-        url: elements.html
+        url: '# blogs '
     menu: Menu
     subtitle: By HTML5 Up
     title: Forty
