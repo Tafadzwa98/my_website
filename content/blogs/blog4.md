@@ -7,7 +7,7 @@ description: Who is Tafadzwa ?
 draft: false
 image: pic1.JPG
 keywords: ""
-slug: aliquam
+slug: about
 title: About me
 ---
 Welcome, in this section I will be sharing abit about my background

@@ -7,7 +7,7 @@ description: Why London Business School
 draft: false
 image: lbs.jpg
 keywords: ""
-slug: tempus
+slug: education
 title: Education Background
 ---
 
