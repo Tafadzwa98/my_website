@@ -5,7 +5,7 @@ categories :
 date: "2017-10-31T22:42:51-05:00"
 description: Who is Tafadzwa ?
 draft: false
-image: pic1.JPG
+image: rugby.jpg
 keywords: ""
 slug: interests
 title: Interests

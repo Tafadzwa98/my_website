@@ -88,10 +88,6 @@ params:
         subtitle: Data Analytics for Finance coursework
         title: R projects
         url: blogs/data
-      - image: pic06.jpg
-        subtitle: Feugiat Amet Tempus
-        title: Etiam
-        url: blogs/ipsum
   two:
     buttonText: Explore
     enable: yes
