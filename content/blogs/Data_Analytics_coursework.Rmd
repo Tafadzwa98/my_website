@@ -286,3 +286,785 @@ Jan 2016 to Aug 2021",
   NULL
 
 ```
+
+```{r, setup, echo=FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = "center"
+)
+```
+
+```{r load-libraries, echo=FALSE}
+library(tidyverse)  # Load ggplot2, dplyr, and all the other tidyverse packages
+library(mosaic)
+library(ggthemes)
+library(GGally)
+library(readxl)
+library(here)
+library(skimr)
+library(janitor)
+library(broom)
+library(tidyquant)
+library(infer)
+library(openintro)
+```
+
+# Youth Risk Behavior Surveillance
+
+## Loading the data
+
+```{r, loading youth risk behaviour data}
+
+data(yrbss)
+glimpse(yrbss)
+
+```
+
+## Examining the data set
+
+### Using `skimr` to get a feeling for the data
+
+```{r, histogram}
+skimr::skim(yrbss)
+```
+
+### Plotting histograms for all numerical variables to visualise distributions
+
+```{r, histograms youth}
+
+library(purrr)
+yrbss %>%
+  keep(is.numeric) %>% 
+  gather() %>% 
+  ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(color="black", fill="pink")+
+    theme_bw()+
+    geom_density(alpha=0.5)
+  
+```
+
+## Exploratory Data Analysis
+
+### Analysing weights data using visualization and summary statistics
+
+```{r, analysing weight data}
+mosaic::favstats( ~ weight , data = yrbss)
+
+ggplot(yrbss, aes(x=weight))+
+  geom_histogram(bin_width=1)
+
+```
+
+### Additional analysis: segmenting weights data by race and gender
+
+```{r, eda_on_weight}
+
+weight_analysis_race <- yrbss%>%
+  filter(!is.na(race))%>%
+  group_by(race)%>%
+  summarise(average_weight=mean(weight, na.rm = TRUE))%>%
+  arrange(desc(average_weight))
+print(weight_analysis_race)
+
+weight_analysis_gender <- yrbss%>%
+  filter(!is.na(gender))%>%
+  group_by(gender)%>%
+  summarise(average_weight=mean(weight, na.rm = TRUE))%>%
+  arrange(desc(average_weight))
+print(weight_analysis_gender)
+
+
+```
+
+### Interpretation
+
+After analyzing the `weight` of participants in kilograms, we observe
+that we are missing weight values from 1004 observations. The
+distribution of weights is skewed to the right, meaning that the
+majority of weight values is less than the mean weight of 67.9
+kilograms, and is concentrated between 50 - 70 kilograms. The skew of
+the weight data is also evident from the high standard deviation of
+16.9, which is depicted in the summary statistics above.
+
+We proactively ran further analyses on weight values across race and
+gender. We observe that average weight of Black or African American
+people is the highest at 69.5 kilograms, followed by Whites at 68.3, and
+the lowest average weight is of Asians at 61 kilograms. We also observe
+that average weight of males is significantly higher at 73.6, than the
+average weight of females at 61.9 kilograms.
+
+## Examining the relationship between a high schooler's weight and their physical activity
+
+### Visiualisation via a boxplot
+
+```{r, boxplot_2}
+
+yrbss %>%
+  filter(!is.na(physically_active_7d))%>%
+  ggplot(aes(x=factor(physically_active_7d)))+
+  geom_boxplot(aes(y=weight))+
+  labs(title="Weight Distribution by Number of Active Days", x="Number of active days in a week", y="Weight")
+
+```
+
+### Creating a new variable in the dataframe `yrbss`, called `physical_3plus`
+
+```{r, mutate_and_count}
+
+# Deleting missing values and adding binary variable physical_3plus 
+
+physical_activity <- yrbss %>%
+  filter(!is.na(physically_active_7d)) %>%    #Deleting missing values
+  mutate(physical_3plus= ifelse(physically_active_7d>=3,"yes", "no"))
+  
+# Creating physical_3plus
+
+physical_activity_1 <- physical_activity%>%
+   group_by(physical_3plus)%>%
+   summarise(count=n())%>%
+   mutate(prop=count/sum(count))
+
+physical_activity_1
+
+```
+
+Thus, the percentage of not-active children who exercise less than 3
+days in a week is 33.1% and percentage of active children who exercise
+more than 3 times a week is 66.9%.
+
+## Boxplots and Confidence Intervals
+
+### Boxplot to compare medians `physical_3plus` vs. `weight`
+
+```{r, boxplots}
+
+physical_activity %>%
+  filter(!is.na(physical_3plus))%>%
+  ggplot(aes(x=factor(physical_3plus)))+
+  geom_boxplot(aes(y=weight))+
+  theme_bw()+
+  labs(title="Distribution between Weight and Physical Activity", x="Physically Active", y="Weight")
+
+```
+
+**Interpretation:** After plotting the relationship between physical
+activity of children and weight, we observe that the mean weight of
+children who exercise more than 3 times a week, is actually higher than
+the mean weight of children who exercise less than 3 times a week. This
+appears counterintuitive, but may be explained by the fact that muscle
+tissue is heavier than any other bodily tissue.
+
+### Confidence Interval for the population proportion of high schools that are *NOT* active 3 or more days per week
+
+```{r, confindece intervals weights data}
+
+# storing NO values derived above
+NO <- physical_activity %>%
+  count(physical_3plus) %>% 
+  filter(physical_3plus == "no") %>% 
+  select(n) %>% 
+  pull()
+
+# storing SUM of No and Yes values
+SUM <- physical_activity %>%
+         nrow()
+
+# getting CI 
+prop.test(NO, SUM)
+
+```
+
+**Interpretation:** The 95% confidence interval for the population
+proportion of high schools that are not active 3 or more days per week
+is between 0.323 and 0.339. A narrower CI indicates a more precise
+estimate.
+
+Thus, we can say that we are 95% confident that the population parameter
+i.e. proportion of children that are not active \>=3 days per week, is
+between 32.3% and 33.9%.
+
+### Calculating confidence interval using formulae
+
+In what follows, we are calculating the 95% confidence interval of
+physical_3plus across both groups (yes and no).
+
+```{r, ci_using_formulas}
+formula_ci <- physical_activity %>% 
+  group_by(physical_3plus)%>%
+  summarise(mean_weight=mean(weight,na.rm = TRUE),
+            sd_weight=sd(weight,na.rm = TRUE),
+            count=n(),
+            t_critical=qt(0.975,count-1),
+            se_weight=sd(weight,na.rm = TRUE)/sqrt(count),
+            margin_of_error=t_critical*se_weight,
+            weight_low=mean_weight-margin_of_error,
+            weight_high=mean_weight+margin_of_error)
+formula_ci
+```
+
+There is an observed difference of about 1.77kg (68.44 - 66.67), and we
+notice that the two confidence intervals do not overlap. It seems that
+the difference is at least 95% statistically significant.
+
+## Hypothesis testing
+
+Our initial hypotheses:
+
+-   **H~0~** = The true difference in means between group no and group
+    yes is equal to zero.
+-   **H~1~** = The true difference in means between group no and group
+    yes is NOT equal to zero.
+
+### Hypothesis test using t-test formula
+
+```{r, t_test_using_R}
+
+# hypothesis testing using t.test() 
+t.test(weight ~ physical_3plus, data = physical_activity)
+
+```
+
+### Hypothesis test with `infer` package
+
+#### Initializing the test as instructed
+
+```{r, calc_obs_difference}
+
+set.seed(1234)
+
+obs_diff <- physical_activity %>%
+    specify(weight ~ physical_3plus) %>%                      # Specify the variable of interest
+    calculate(stat = "diff in means", order = c("yes", "no")) # Find the mean difference of each sample
+
+```
+
+#### Simulating the test on the null distribution
+
+```{r, hypothesis_testing_using_infer_package}
+
+set.seed(12345)
+
+null_dist <- physical_activity %>%
+  specify(weight ~ physical_3plus) %>%                      #specify variables
+  hypothesize(null = "independence") %>%                    #assume independence, i.e, there is no difference
+  generate(reps = 1000, type = "permute") %>%               #generate 1000 reps, of type "permute"
+  calculate(stat = "diff in means", order = c("yes", "no")) #calculate statistic of difference, namely "diff in means"
+
+head(null_dist)
+
+```
+
+#### Visualizing null distribution
+
+```{r}
+ggplot(data = null_dist, aes(x = stat)) +
+  geom_histogram()
+
+```
+
+#### Calculating the p-value for hypothesis test using the function `infer::get_p_value()`
+
+```{r}
+
+null_dist %>% visualize() +
+  shade_p_value(obs_stat = obs_diff, direction = "two-sided")
+
+null_dist %>%
+  infer::get_p_value(obs_stat = obs_diff, direction = "two_sided")
+
+```
+
+# IMDB ratings: Differences between directors
+
+## Data overview
+
+```{r load-movies-data}
+movies <- read_csv(here::here("data", "movies.csv"))
+glimpse(movies)
+head(movies)
+```
+
+## Manipulating the dataframe
+
+```{r, manupluating movies dataset}
+
+# Creating a dataframe that includes mean and confidence intervals
+
+movies_1 <- movies %>%
+  filter((director == "Tim Burton") | (director == "Steven Spielberg")) %>% #selecting only the two directors
+  group_by(director) %>% 
+  summarise(mean_rating=mean(rating, na.rm = TRUE), #creating summary statistics for both directors
+            sd = sd(rating, na.rm = TRUE), 
+            n = n(),
+            t_critical= qt(0.975, n-1),
+            SE = sd/sqrt(n),
+            margin_of_error= (t_critical * SE),
+            Lower_CI = (mean_rating - margin_of_error),
+            Upper_CI = (mean_rating + margin_of_error) 
+            )
+
+knitr::kable(movies_1)
+
+```
+
+## Plotting the graph
+
+```{r, graphing confidence intervals for directors}
+
+movies_1 %>%
+  ggplot(aes(x=reorder(director, mean_rating),y=mean_rating,color=director)) +
+  geom_point(aes(y=mean_rating, color=director, size=3)) +
+  geom_errorbar(aes(ymin=Lower_CI, ymax=Upper_CI), width=0.1, size=1) +
+  geom_rect(aes(xmin=-Inf,xmax=+Inf,ymin=7.27,ymax=7.33),fill="grey",color="NA",alpha=0.5)+
+  geom_text(aes(x=reorder(director, mean_rating),y=mean_rating,label = sprintf("%.2f",mean_rating)),colour="black",vjust=-1.5,size=7) +
+  geom_text(aes(x=reorder(director, mean_rating),y=Lower_CI,label = sprintf("%.2f",Lower_CI)),colour="black",vjust=-2,size=5) +
+  geom_text(aes(x=reorder(director, mean_rating),y=Upper_CI,label = sprintf("%.2f",Upper_CI)),colour="black",vjust=-2,size=5) +
+  coord_flip() +
+  labs (
+    title = "Do Spielberg and Burton have the same mean in IMDB ratings?",
+    y = "Mean IMDB Rating",
+    subtitle = "95% confidence intervals overlap"
+  ) +
+  theme_bw()+
+  theme(axis.title.y = element_blank(),
+        aspect.ratio = 1/1.5) +
+  theme(legend.position = "none") +
+  NULL
+
+```
+
+## Hypothesis Testing
+
+### Hypotheses and Interpretation
+
+Our Hypotheses:
+
+-   **H~0~** = The true difference in the mean of IMDB ratings between
+    Steven Spielberg and Tim Burton is equal to 0.
+-   **H~1~** = The true difference in means between Steven Spielberg and
+    Tim Burton is not equal to 0.
+
+From our subsequent analyses we record the following test statistics:
+
+-   A t-stat of 3
+-   A p-value of 0.01
+
+**Conclusion**: Based on the above t-test with a t-value of 3 (and a
+corresponding p-value of 0.01), we reject the null hypothesis and
+conclude that at the 5% significance level there is a statistically
+significant difference between the rating of Steven Spielberg's and Tim
+Burton's movies.
+
+### Hypothesis testing using t.test()
+
+```{r, t-test hypo_testing}
+
+movies_2 <- movies %>%
+  filter(director %in% c("Steven Spielberg", "Tim Burton")) #selecting only the two directors
+
+t.test(rating~director,data=movies_2)
+
+```
+
+### Hypothesis testing using the infer package
+
+#### Setting up the test
+
+```{r, t-infer hypo_testing}
+
+set.seed(1234)  # set.seed(x) is used for reproducability, as it ensures that our random numbers are the same every time. 
+                # 'x' in set seed has nothing to do with the output itself, it is simply an integer that tells the algorithm where it should begin
+
+obs_diff <- movies_2 %>%
+  specify(rating ~ director) %>%
+  calculate(stat = "diff in means", order = c("Steven Spielberg", "Tim Burton"))
+
+
+ratings_in_null_world <- movies_2 %>%
+  specify(rating~director) %>%                      # Specify the variable of interest
+  hypothesize(null = "independence") %>%            # Hypothesize a null of no (or zero) difference
+  generate(reps = 1000, type = "permute") %>%       # Generate a bunch of simulated samples
+  calculate(stat = "diff in means", order = c("Tim Burton", "Steven Spielberg")) # Find the mean difference of each sample
+```
+
+#### Visualizing the null hypothesis
+
+```{r, visualize null hypo}
+ggplot(data = null_dist, aes(x = stat)) +
+  geom_histogram()+
+  theme_bw()
+```
+
+#### Calculating and visualizing the p-value
+
+```{r, p_value_get}
+
+ratings_in_null_world %>% 
+  get_p_value(obs_stat = obs_diff, direction = "both")     
+
+ratings_in_null_world  %>% 
+  visualize()+
+  shade_p_value(obs_stat = obs_diff, direction = "both")
+```
+
+# Omega Group plc- Pay Discrimination
+
+## Introduction to the Problem
+
+At the last board meeting of Omega Group Plc., the issue was raised that
+women were being discriminated in the company, in the sense that the
+salaries were not the same for male and female executives.
+
+The objective of the subsequent analysis is to find out whether there is
+indeed a significant difference between the salaries of men and women,
+and whether the difference is due to discrimination or whether it is
+based on another, possibly valid, determining factor.
+
+## Loading the data
+
+```{r load_omega_data}
+omega <- read_csv(here::here("data", "omega.csv"))
+glimpse(omega) # examine the data frame
+head(omega) # plot first 6 observations
+```
+
+## Calculating summary statistics on salary by gender
+
+```{r, confint_single_valiables}
+
+# Inital summary Statistics of salary by gender
+
+df_summary_1 <- mosaic::favstats (salary ~ gender, data=omega)
+
+# Selecting only gender, mean, SD and sample size
+
+df_summary_2 <- df_summary_1 %>%
+  select(gender, mean, sd, n)
+
+# Adding t-critical value, standard error, margin of error, and 95% condifence interval to the dataframe
+
+df_summary_3 <- df_summary_2 %>%
+  mutate(t_critical=qt(0.975,n-1),
+         SE = sd/sqrt(n), 
+         margin_of_error= t_critical * SE,
+         Lower_CI = mean - margin_of_error,
+         Upper_CI = mean + margin_of_error,
+         )
+
+# Creating a table to show the results
+
+knitr::kable(df_summary_3, caption = "Summary statistics of salaries from 50 executives by gender")
+
+```
+
+## Hypothesis testing on the difference in mean
+
+Our Hypotheses:
+
+-   **H~0~** = The true difference in means of salary between group female and group male is equal to 0.
+-   **H~1~** = The true difference in means of salary between group female and group male is not equal to 0.
+
+### Hypothesis testing using t.test() 
+
+```{r, hypothesis_testing_t_test}
+
+t.test(salary~gender,data=omega)
+
+```
+
+### Hypothesis testing using infer package
+
+```{r, hypothesis_testing_infer}
+
+obs_diff_in_omega <- omega %>%
+  specify(salary~ gender) %>%
+  calculate(stat = "diff in means", order = c("male", "female"))
+
+set.seed(1234)
+
+salaries_in_null_world <- omega %>%
+  specify(salary ~ gender) %>%                      # Specify the variable of interest
+  hypothesize(null = "independence") %>%            # Hypothesize a null of no (or zero) difference
+  generate(reps = 1000, type = "permute") %>%       # Generate a bunch of simulated samples
+  calculate(stat = "diff in means", order = c("female", "male")) # Find the mean difference of each sample
+
+ggplot(data = salaries_in_null_world, aes(x = stat)) +       ##visualize_null_hypothesis
+  geom_histogram()
+
+salaries_in_null_world  %>%               ##get p value
+  visualize()+
+  shade_p_value(obs_stat = obs_diff_in_omega, direction = "both")
+
+salaries_in_null_world %>% 
+  get_p_value(obs_stat =obs_diff_in_omega, direction = "both") 
+
+```
+
+### Interpretation and conclusions
+
+Running our tests with a null hypothesis of *no*
+difference in salaries between men and women and the alternative
+hypothesis being that there *is* a difference in salaries, i.e., the
+true difference in means between females and males is not equal to 0, we
+reject the null hypothesis at the 1% significance level based on a
+t-stat of -4/4 and a corresponding p-value of 0).Hence, the tests indicate that based on our sample men and women do not earn the same amount of money.
+
+## Relationship between Experience and Gender?
+
+### Men have more experience on average
+
+```{r, experience_stats}
+
+# Summary Statistics of salary by gender
+favstats (experience ~ gender, data=omega)
+
+```
+
+### Is there a significant difference in average experience across gender?
+
+```{r, t_test_experience}
+
+# hypothesis testing using t.test() 
+t.test(experience~gender,data=omega)
+
+```
+
+**Answer**: From the above t-test, we can see that there is a
+significant difference between the experience of male and female
+executives. This conclusion can be drawn from a t-value of -5 and a
+p-value of 0.001%. We can also infer from the confidence interval that
+the difference in mean is in fact between 8.13 and 19.35 years with 95%
+certainty. Pverall, this suggests that not only gender but also
+experience plays a role in the difference in salary across males and
+females.
+
+## Analysing the relationship between salary and experience with a scatter plot
+
+```{r, salary_exp_scatter}
+
+omega %>%
+  ggplot(aes(x = experience, y = salary))+
+  geom_point()+
+  geom_smooth(method=lm,se=F)+
+  theme_bw()+
+  labs(
+    title = "Relationship between salary and experience", 
+    x = "Experience in years",
+    y = "Salary in USD"
+    )+
+  NULL
+
+```
+
+**Answer**: As we can see from the above plot, there appears to be a
+positive linear relationship between experience and the level of salary.
+That is, as years of experience increase so does salary. Hence, when
+examining the difference in salary between men and women one would have
+to control for years of experience as it appears to be an explanatory
+variable. Thus, not accounting for experience leads to omitted variable
+bias and invalidates our initial analysis.
+
+## Check correlations between the data
+
+```{r, ggpairs}
+omega %>% 
+  select(gender, experience, salary) %>% # to change order of our variables for our graphical representation
+  ggpairs(aes(colour=gender, alpha = 0.3))+ #ggpairs creates a scatter plot and correlation matrix
+  theme_bw()
+```
+
+**Answer**: In the first row, the above graphs visualize how there are
+significant differences in salary and experience across gender. In the
+first graph on the second row, we can see that there are many females
+with low levels of experience while more than half of men seem to have
+20+ years of experience. Moreover, the correlation between salary and
+experience appears to be significantly positive for both females and
+males. The middle graph on the last row reiterates the point made in the
+previous section: We see a positive relationship between experience and
+salary; additionally, males cluster at the top right and women at the
+bottom left.
+
+# Challenge 1: Yield Curve inversion
+
+## Loading the yield curve data
+
+```{r download_historical_yield_curve, warning=FALSE}
+
+yield_curve <- read_csv(here::here("data", "yield_curve.csv"))
+
+glimpse(yield_curve)
+```
+
+## Plotting yield curves
+
+### Yields on US rates by duration since 1960
+
+```{r yield_curve_1, out.width="100%"}
+
+yield_curve$duration <- factor(yield_curve$duration, levels = c("3-Month Treasury Bill", 
+                                                                "6-Month Treasury Bill", 
+                                                                "1-Year Treasury Rate",
+                                                                "2-Year Treasury Rate",
+                                                                "3-Year Treasury Rate",
+                                                                "5-Year Treasury Rate",
+                                                                "7-Year Treasury Rate",
+                                                                "10-Year Treasury Rate",
+                                                                "20-Year Treasury Rate",
+                                                                "30-Year Treasury Rate"))
+
+```
+
+```{r, plotting yield graph 1, out.width="100%"}
+
+yield_curve%>%
+ggplot(aes(x=date, y=value, colour=duration))+
+  geom_line() +
+  theme_bw() +
+  facet_wrap(~ duration, ncol=2) +
+  ggtitle("Yields on U.S. Treasury rates since 1960") +
+  ylab("%") +
+  labs(caption = "Source: St Louis Federal Reserve Economic Database (FRED)") +
+  theme(axis.title.x = element_blank()) +
+  theme(aspect.ratio = 0.25) +
+  theme(legend.position = "none") +
+  NULL
+
+```
+
+
+### Monthly yields on US rates by duration since 1999 on a year-by-year basis
+
+```{r yield_curve_2, out.width="100%"}
+
+yield_curve$maturity <- factor(yield_curve$maturity, levels = c("3m", 
+                                                                "6m", 
+                                                                "1y",
+                                                                "2y",
+                                                                "3y",
+                                                                "5y",
+                                                                "7y",
+                                                                "10y",
+                                                                "20y",
+                                                                "30y"))
+
+yield_curve_1999 <- yield_curve %>% 
+  filter(year(date)>=1999) %>% 
+  mutate(year = year(date))
+
+yield_curve_1999%>%
+ggplot(aes(x=maturity, y=value, color=year, group=date)) +
+  geom_line() +
+  theme_bw() +
+  facet_wrap(~ year, ncol=4) +
+  ggtitle("US Yield Curve") +
+  ylab("Yield (%)") +
+  xlab("Maturity") +
+  labs(caption = "Source: St Louis Federal Reserve Economic Database (FRED)") +
+  theme(aspect.ratio = 0.35) +
+  theme(legend.position = "none") +
+  scale_color_gradientn(colours = rainbow(5))+
+  NULL
+
+```
+
+### Three-month and 10-year yields since 1999
+
+```{r yield_curve_3, out.width="100%"}
+
+target <- c("3m", "10y")
+
+yield_curve_plot3 <- yield_curve_1999 %>%
+filter(maturity %in% target)
+  
+yield_curve_plot3 %>%
+ggplot(aes(x=date, y=value, colour=maturity)) +
+  geom_line() +
+  theme_bw() +
+  ggtitle("Yields on 3-month and 10-year US Treasury rates since 1999") +
+  ylab("%") +
+  labs(caption = "Source: St Louis Federal Reserve Economic Database (FRED)") +
+  theme(axis.title.x = element_blank(),
+        legend.title = element_blank(),
+        aspect.ratio = 1) +
+  scale_color_discrete(labels = c("3-Month Treasury Bill", "10-Year Treasury Rate"))
+
+```
+
+## Recession analysis
+
+### Loading recession data
+
+```{r setup_US-recessions_1, warning=FALSE}
+
+# get US recession dates after 1946 from Wikipedia 
+# https://en.wikipedia.org/wiki/List_of_recessions_in_the_United_States
+
+recessions <- tibble(
+  from = c("1948-11-01", "1953-07-01", "1957-08-01", "1960-04-01", "1969-12-01", "1973-11-01", "1980-01-01","1981-07-01", "1990-07-01", "2001-03-01", "2007-12-01","2020-02-01"),  
+  to = c("1949-10-01", "1954-05-01", "1958-04-01", "1961-02-01", "1970-11-01", "1975-03-01", "1980-07-01", "1982-11-01", "1991-03-01", "2001-11-01", "2009-06-01", "2020-04-30") 
+  )  %>% 
+  mutate(From = ymd(from), 
+         To=ymd(to),
+         duration_days = To-From)
+
+recessions 
+
+```
+
+### Plotting recessions
+
+```{r yield_curve_4, out.width="100%"}
+
+recessions_after_1960 <- recessions %>%
+  filter(year(from) >=1960)
+
+yield_cruve_plot4 <- yield_curve %>%
+  select(date, series_id, value) %>%
+  pivot_wider(names_from = series_id, values_from = value) %>%
+  mutate(yield_3m_vs_10y = GS10 - TB3MS)
+
+
+ yield_cruve_plot4 %>%
+  ggplot(aes(x=date, y=yield_3m_vs_10y)) +
+   
+  geom_ribbon(aes(ymin=0,ymax=ifelse(yield_3m_vs_10y>0, yield_3m_vs_10y,0)),
+              fill="steelblue2",
+              alpha=0.4) +
+   
+  geom_ribbon(aes(ymin=ifelse(yield_3m_vs_10y<0, yield_3m_vs_10y,0),ymax=0),
+              fill="red",
+              alpha=0.2)+
+   
+  geom_line() +
+  geom_hline(aes(yintercept=0),color="black") +
+   
+  geom_rect(data=recessions_after_1960, 
+            inherit.aes = FALSE,
+            aes(ymin=-Inf, ymax= Inf, xmin=From, xmax=To), 
+            fill = "grey",
+            alpha = 0.8) +
+   
+  theme_bw() +
+   
+  geom_rug(sides="b",alpha=0.4, color=ifelse(yield_cruve_plot4$yield_3m_vs_10y>0, "steelblue2", "red"),
+                                             length = unit(0.02, "npc"))+
+   
+  labs(title = "Yield Curve Inversion: 10-year minus3-month U.S. Treasury rates",
+       subtitle = "Difference in % points, monthly averages.\nShaded areas correspond to recessions",
+       caption = "Source: St. Louis Federal Reserve Economic Database (FRED)",
+       x="",
+       y="Difference (10 year-3 month) yield in %") +
+  scale_x_date(date_breaks="2 years",date_labels="%Y")
+ 
+```
+
