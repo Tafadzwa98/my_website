@@ -12,7 +12,7 @@ title: Work Experience
 ---
 Attached below is my latest resume. 
 
-After finishing my undergraduate degree, I like many other students were forced to defer studies for a year due to the COVID-19 pandemic. Over the course of my gap year I undertook 3 internships, which I will go over in detail below starting of with my current internship at Mbuyu Capital Partners.
+After finishing my undergraduate degree, like many other students, I was forced to defer my further studies for a year due to the COVID-19 pandemic. Over the course of my gap year, I undertook three internships which I will go over in detail below starting with my current internship at Mbuyu Capital Partners.
 
 # Mbuyu Capital Partners
 
@@ -20,8 +20,10 @@ Mbuyu Capital is a private equity firm focused on making sustainable investments
 
 # Next Generation Growth
 
-Next Generation is a Melbourne based search fund. A search is similar to a traditonal private equity firm with the only difference being that a search fund is only looking to acquire and run one company. My role mainly involved analysing mutiple companies on a daily basis. I was mainly looking for companies with high growth potential and trading within the required margins i.e., 20% EBITDA margins and companies with market capitalisations ranging from $5 - 55 million. After analysing and pitching the identified companies to my Managing Director I then reached out to the owners and managed commmuinications between the MD and owners.
+Next Generation is a Melbourne based search fund. A search fund is similar to a traditional private equity firm with the only difference being that a search fund is only looking to acquire and run one company. My role mainly involved analysing multiple companies on a daily basis. I was mainly looking for companies with high growth potential and trading within the required margins i.e., 20% EBITDA margins and companies with market capitalisations ranging from $5 - 55 million. After analysing and pitching the identified companies to my Managing Director I then reached out to the owners and managed communications between the MD and owners.
 
 # AI Ventures
 
-AI Ventures is an Australian based venture capital firm that focuses only on Artificial intelligence. I interned there for a period of 4 months and was awarded **The most valuable professional award for notable leadership and dedication**. My main task over the internship period were to initially research and present on AI listed companies on the Australian Stock Exchange, then develop an online valuation model to be used as a preliminary valuation method for startups before we start any due dilligence. 
+AI Ventures is an Australian based venture capital firm that focuses only on Artificial intelligence. I interned there for a period of 4 months and was awarded **The most valuable professional award for notable leadership and dedication**. My main task over the internship period was to initially research and present on AI listed companies on the Australian Stock Exchange, then develop an online valuation model to be used as a preliminary valuation method for start-ups before we start any due diligence.
+
+ 
