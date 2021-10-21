@@ -26,4 +26,4 @@ Next Generation is a Melbourne based search fund. A search fund is similar to a 
 
 AI Ventures is an Australian based venture capital firm that focuses only on Artificial intelligence. I interned there for a period of 4 months and was awarded **The most valuable professional award for notable leadership and dedication**. My main task over the internship period was to initially research and present on AI listed companies on the Australian Stock Exchange, then develop an online valuation model to be used as a preliminary valuation method for start-ups before we start any due diligence.
 
- 
+ Currenlty I am in the process of looking for an internship/full time job to start after completing my masters degree next year.
