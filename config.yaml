@@ -54,7 +54,7 @@ params:
       - name: Home
         url: 
       - name: About Me
-        url: blogs/about
+        url: blogs/me
       - name: Education
         url: blogs/education
       - name: Work Experience
@@ -71,7 +71,7 @@ params:
       - image: pic1.JPG
         subtitle: Who is Tafadzwa
         title: About me
-        url: blogs/about
+        url: blogs/me
       - image: lbs pic.jpg
         subtitle: My journey to London Business School
         title: Education
